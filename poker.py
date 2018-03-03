@@ -11,7 +11,7 @@ class Table:
         self.seats = deque()
         self.min_denomination = min_denomination
         self.player_positions = []
-        self.blind_structure = Blinds(self.num_players, buy_in)
+        self.blind_structure = Blinds(len(players), buy_in)
         self.reward_structure = []
 
         self.player_indices = range(len(players))
@@ -22,8 +22,8 @@ class Table:
 
     def play(self):
         while len(self.seats) > 1:
-            blinds = self.blind_structure.next_blinds()
-            poker_round = Round(self.seats, blinds, self.min_denomination)
+            small_blind = self.blind_structure.next_blinds()
+            poker_round = Round(self.seats, small_blind, self.min_denomination)
             self.seats, gone_out = poker_round.play()
 
             if gone_out:

@@ -4,6 +4,7 @@ class Seat:
         self.player = player
         self.index = index
         self.chips = chips
+        self.bet = 0
         self.pot = 0
         self.folded = False
 
@@ -24,10 +25,15 @@ class Seat:
         self.card_1 = None
         self.card_2 = None
 
-    def move_chips_into_pot(self, num_chips):
+    def bet_chips(self, num_chips):
         chips_available = min(self.chips, num_chips)
-        self.chips -= chips_available
-        self.pot += chips_available
+        bet = chips_available - self.bet
+        self.chips -= bet
+        self.bet += bet
+
+    def move_bet_to_pot(self):
+        self.pot += self.bet
+        self.bet = 0
 
     def get_chips_from_pot(self, num_chips):
         self.pot -= min(self.pot, num_chips)

@@ -1,4 +1,4 @@
-from itertools import deque
+from collections import deque
 
 
 class Turn:
@@ -17,14 +17,14 @@ class Turn:
 
     def get_action(self):
         seat = self.filtered_seats[0]
-        self.last_action = seat.get_action()
+        return seat.get_action()
 
     def supply_state_to_seats(self):
-        pot = sum(seat.pot for seat in self.seats)
+        pot = sum(seat.pot + seat.bet for seat in self.seats)
 
         player_chips = deque(seat.chips for seat in self.seats)
-        turn_indicator = deque([1] + [0] * len(self.seats - 1))
-        folded = deque(1 if seat not in self.filtered_seats else 0 for seat in self.seats)
+        turn_indicator = deque([1] + [0] * (len(self.seats) - 1))
+        folded = deque([1 if seat not in self.filtered_seats else 0 for seat in self.seats])
 
         for seat in self.seats:
             player_chips.rotate()
@@ -49,7 +49,7 @@ class Turn:
 
 class GameState:
 
-    def __init__(self, cards, current_bet, folded, pot, player_chips, turn_indicator, last_action):
+    def __init__(self, cards, current_bet, last_action, pot, player_chips, turn_indicator, folded):
         self.cards = cards
         self.current_bet = current_bet
         self.last_action = last_action

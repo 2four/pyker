@@ -11,6 +11,9 @@ class Card:
         self.suit = suit
         self.number = number
 
+    def __str__(self):
+        return "{} of {}".format(self.number.name, self.suit.name)
+
     def __lt__(self, other):
         return self.number < other.number
 
@@ -43,8 +46,10 @@ class Deck:
 
     def __init__(self):
         self.cards = []
-        for suit in Card.Suit:
-            for number in Card.Number:
+        for suit in Suit:
+            for number in Number:
+                if number == Number.ACE_LOW:
+                    continue
                 card = Card(suit, number)
                 self.cards.append(card)
 

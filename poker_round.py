@@ -6,44 +6,46 @@ from betting_round import BettingRound
 
 class Round:
 
-    def __init__(self, seats, blinds, min_denomination):
+    def __init__(self, seats, small_blind, min_denomination):
+        print("\n=================== NEW ROUND ===================")
         self.seats = seats
-        self.blinds = blinds
+        self.small_blind = small_blind
         self.min_denomination = min_denomination
+        self.cards = []
 
     def play(self):
         self.shuffle_and_deal()
-        min_raise = self.blinds[1]
+        self.put_in_blinds()
+        min_raise = self.small_blind
+        starting_bet = self.small_blind * 2
         remaining_seats = self.seats
 
-        first_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise, min_raise)
+        first_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise, starting_bet)
         remaining_seats = first_betting_round.play()
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
             return
 
-        self.play_flop()
+        self.deal_flop()
 
-        second_betting_round = BettingRound(
-            self.seats, remaining_seats, self.cards, min_raise)
+        second_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
         remaining_seats = second_betting_round.play()
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
             return
 
-        self.play_turn()
+        self.deal_turn()
 
-        third_betting_round = BettingRound(
-            self.seats, remaining_seats, self.cards, min_raise)
+        third_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
         remaining_seats = third_betting_round.play()
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
             return
 
-        self.play_flop()
+        self.deal_river()
 
         final_betting_round = BettingRound(
             self.seats, remaining_seats, self.cards, min_raise)
@@ -72,9 +74,11 @@ class Round:
             seat.set_card_2(self.deck.deal())
 
     def put_in_blinds(self):
-        self.seats[1].move_chips_into_pot(self.blinds.small_blind)
-        self.seats[2 % len(self.seats)].move_chips_into_pot(
-            self.blinds.big_blind)
+        small_blind = self.small_blind
+        big_blind = self.small_blind * 2
+
+        self.seats[1].bet_chips(small_blind)
+        self.seats[2 % len(self.seats)].bet_chips(big_blind)
 
     def deal_flop(self):
         # burn card

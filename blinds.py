@@ -10,7 +10,11 @@ class Blinds:
     def __init__(self, num_players, buy_in):
         self.counter = 0
         self.increases = 0
-        self.small_blind = self.INITIAL_BLINDS[0]
+        self.small_blind = self.initial_blinds()[0]
+
+    @classmethod
+    def initial_blinds(cls):
+        return cls.INITIAL_BLINDS
 
     def small_blind(self):
         return self.small_blind
@@ -31,8 +35,8 @@ class Blinds:
 
     def next_blinds(self):
         self.increases += 1
-        if self.increases > len(self.INITIAL_BLINDS):
+        if self.increases > len(self.initial_blinds()):
             self.small_blind *= 2
             return self.small_blind
         else:
-            return self.INITIAL_BLIND[self.increases]
+            return self.initial_blinds()[self.increases]
