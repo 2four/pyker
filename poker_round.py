@@ -11,6 +11,56 @@ class Round:
         self.blinds = blinds
         self.min_denomination = min_denomination
 
+    def play(self):
+        self.shuffle_and_deal()
+        min_raise = self.blinds[1]
+        remaining_seats = self.seats
+
+        first_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise, min_raise)
+        remaining_seats = first_betting_round.play()
+
+        if len(remaining_seats) == 1:
+            self.distribute_winnings(remaining_seats)
+            return
+
+        self.play_flop()
+
+        second_betting_round = BettingRound(
+            self.seats, remaining_seats, self.cards, min_raise)
+        remaining_seats = second_betting_round.play()
+
+        if len(remaining_seats) == 1:
+            self.distribute_winnings(remaining_seats)
+            return
+
+        self.play_turn()
+
+        third_betting_round = BettingRound(
+            self.seats, remaining_seats, self.cards, min_raise)
+        remaining_seats = third_betting_round.play()
+
+        if len(remaining_seats) == 1:
+            self.distribute_winnings(remaining_seats)
+            return
+
+        self.play_flop()
+
+        final_betting_round = BettingRound(
+            self.seats, remaining_seats, self.cards, min_raise)
+        remaining_seats = final_betting_round.play()
+
+        if len(remaining_seats) == 1:
+            self.distribute_winnings(remaining_seats)
+            return
+
+        winners = self.winners_from_remaining()
+        self.distribute_winnings(winners)
+
+        still_in = deque(seat for seat in self.seats if seat.chips > 0)
+        gone_out = [Seat for seat in self.seats if seat.chips == 0]
+
+        return still_in, gone_out
+
     def shuffle_and_deal(self):
         self.deck = Deck()
         self.deck.shuffle()
@@ -23,7 +73,8 @@ class Round:
 
     def put_in_blinds(self):
         self.seats[1].move_chips_into_pot(self.blinds.small_blind)
-        self.seats[2 % len(self.seats)].move_chips_into_pot(self.blinds.big_blind)
+        self.seats[2 % len(self.seats)].move_chips_into_pot(
+            self.blinds.big_blind)
 
     def deal_flop(self):
         # burn card
@@ -47,49 +98,6 @@ class Round:
         # deal turn
         self.cards.append(self.deck.deal())
 
-    def play(self):
-        self.shuffle_and_deal()
-        min_raise = self.blinds[1]
-        remaining_seats = self.seats
-
-        first_betting_round = BettingRound(remaining_seats, self.cards, min_raise, min_raise)
-        remaining_seats = first_betting_round.play()
-
-        if len(remaining_seats) == 1:
-            self.distribute_winnings(remaining_seats)
-            return
-
-        self.play_flop()
-
-        second_betting_round = BettingRound(remaining_seats, self.cards, min_raise)
-        remaining_seats = second_betting_round.play()
-
-        if len(remaining_seats) == 1:
-            self.distribute_winnings(remaining_seats)
-            return
-
-        self.play_turn()
-
-        third_betting_round = BettingRound(remaining_seats, self.cards, min_raise)
-        remaining_seats = third_betting_round.play()
-
-        if len(remaining_seats) == 1:
-            self.distribute_winnings(remaining_seats)
-            return
-
-        self.play_flop()
-
-        final_betting_round = BettingRound(remaining_seats, self.cards, min_raise)
-        remaining_seats = final_betting_round.play()
-
-        if len(remaining_seats) == 1:
-            self.distribute_winnings(remaining_seats)
-            return
-
-        winners = self.winners_from_remaining()
-        self.distribute_winnings(winners)
-        return deque(seat for seat in self.seats if seat.chips > 0)
-
     def winners_from_remaining(self):
         hands = []
 
@@ -102,7 +110,8 @@ class Round:
 
     def distribute_winnings(self, winners):
         winners.sort(key=Seat.pot)
-        winners_by_deal_order = [seat for seat in self.seats if seat in winners]
+        winners_by_deal_order = [
+            seat for seat in self.seats if seat in winners]
 
         while len(winners) > 0:
             winner = winners[0]
@@ -115,14 +124,16 @@ class Round:
 
             # split that side pot
             normalized_winnings = winnings // self.min_denomination
-            quotient = (normalized_winnings // len(winners)) * self.min_denomination
+            quotient = (normalized_winnings // len(winners)) * \
+                self.min_denomination
             remainders = normalized_winnings % len(winners)
 
             for winner in winners:
                 winner.take_winnings(quotient)
 
             for index in range(remainders):
-                winners_by_deal_order[index].take_winnings(self.min_denomination)
+                winners_by_deal_order[index].take_winnings(
+                    self.min_denomination)
 
             del winners[0]
 

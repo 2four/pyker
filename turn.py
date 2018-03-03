@@ -1,11 +1,11 @@
-from poker import GameState
 from itertools import deque
 
 
 class Turn:
 
-    def __init__(self, seats, cards, current_bet, last_action, min_raise):
+    def __init__(self, seats, filtered_seats, cards, current_bet, last_action, min_raise):
         self.seats = seats
+        self.filtered_seats = filtered_seats
         self.cards = cards
         self.current_bet = current_bet
         self.last_action = last_action
@@ -16,7 +16,7 @@ class Turn:
         return self.get_action()
 
     def get_action(self):
-        seat = self.seats[0]
+        seat = self.filtered_seats[0]
         self.last_action = seat.get_action()
 
     def supply_state_to_seats(self):
@@ -24,7 +24,7 @@ class Turn:
 
         player_chips = deque(seat.chips for seat in self.seats)
         turn_indicator = deque([1] + [0] * len(self.seats - 1))
-        folded = deque(1 if seat.still_in else 0 for seat in self.seats)
+        folded = deque(1 if seat not in self.filtered_seats else 0 for seat in self.seats)
 
         for seat in self.seats:
             player_chips.rotate()
@@ -45,3 +45,15 @@ class Turn:
         turn_indicator = [False] * len(self.seats)
         turn_indicator[(seat.index - self.seats[0].index) % len(self.seats)] = True
         return turn_indicator
+
+
+class GameState:
+
+    def __init__(self, cards, current_bet, folded, pot, player_chips, turn_indicator, last_action):
+        self.cards = cards
+        self.current_bet = current_bet
+        self.last_action = last_action
+        self.pot = pot
+        self.player_chips = player_chips
+        self.turn_indicator = turn_indicator
+        self.folded = folded
