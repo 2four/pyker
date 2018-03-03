@@ -14,6 +14,9 @@ class Seat:
     def set_card_2(self, card_2):
         self.card_2 = card_2
 
+    def get_cards(self):
+        return self.card_1, self.card_2
+
     def supply_state(self, game_state):
         self.player.supply_state(self.card_1, self.card_2, game_state)
 
@@ -36,7 +39,9 @@ class Seat:
         self.bet = 0
 
     def get_chips_from_pot(self, num_chips):
-        self.pot -= min(self.pot, num_chips)
+        taken = min(self.pot, num_chips)
+        self.pot -= taken
+        return taken
 
     def reclaim_remaining_pot(self):
         self.chips += self.pot

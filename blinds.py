@@ -7,7 +7,7 @@ class Blinds:
     INCREASE_VARIANCE = 3
     INITIAL_BLINDS = [25, 50, 100, 200, 500, 1000, 1500, 2000, 5000, 10000]
 
-    def __init__(self, num_players, buy_in):
+    def __init__(self, buy_in):
         self.counter = 0
         self.increases = 0
         self.small_blind = self.initial_blinds()[0]
@@ -26,6 +26,8 @@ class Blinds:
         self.counter += 1
         if self.is_in_increase_range() and self.check_for_blind_increase():
             self.small_blind = self.next_blinds()
+
+        return self.small_blind
 
     def is_in_increase_range(self):
         return self.counter >= self.INCREASE_VARIANCE - self.INCREASE_FREQUENCY

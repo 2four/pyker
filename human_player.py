@@ -15,6 +15,7 @@ class HumanPlayer(Player):
         self.game_state = game_state
 
     def get_action(self):
+        print("")
         print("Player number  : {}".format(self.index))
         print("Hole cards     : {} and {}".format(self.card_1, self.card_2))
         print("Table cards    : {}".format([str(card) for card in self.game_state.cards]))

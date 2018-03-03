@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from itertools import combinations
 from random import shuffle
 
@@ -25,7 +25,7 @@ class Suit(Enum):
     CLUBS = 3
 
 
-class Number(Enum):
+class Number(IntEnum):
     ACE_LOW = 1
     TWO = 2
     THREE = 3
@@ -66,7 +66,7 @@ class Hand:
         if self.rank() == other.rank():
             return self.less_than(other)
         else:
-            return self.rank() > other.rank()
+            return self.rank() < other.rank()
 
     def __eq__(self, other):
         return not self < other and not other < self
@@ -215,7 +215,7 @@ class HighCards(Hand):
 
 def get_best_hand(hole_cards, community_cards):
     cards = [*hole_cards, *community_cards]
-    card_combinations = combinations(cards, 5)
+    card_combinations = [list(card_set) for card_set in combinations(cards, 5)]
 
     hand = get_hand(card_combinations[0])
     for card_set in card_combinations[1:]:
@@ -234,19 +234,19 @@ def get_hand(card_set):
     if four_of_a_kind:
         return four_of_a_kind
 
-    full_house = get_full_house(card_set)
+    full_house = get_full_house(number_counts)
     if full_house:
         return full_house
 
-    three_of_a_kind = get_three_of_a_kind(card_set)
+    three_of_a_kind = get_three_of_a_kind(number_counts)
     if three_of_a_kind:
         return three_of_a_kind
 
-    two_pairs = get_two_pairs(card_set)
+    two_pairs = get_two_pairs(number_counts)
     if two_pairs:
         return two_pairs
 
-    pair = get_pair(card_set)
+    pair = get_pair(number_counts)
     if pair:
         return pair
 
@@ -338,7 +338,7 @@ def get_flush(card_set):
 
 
 def get_straight(card_set):
-    numbers = [card_set.number for card in card_set]
+    numbers = [card.number for card in card_set]
 
     if numbers == [Number.ACE, Number.FIVE, Number.FOUR, Number.THREE, Number.TWO]:
         return Straight(Number.FIVE)

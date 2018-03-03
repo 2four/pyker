@@ -25,7 +25,7 @@ class Round:
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
-            return
+            return self.get_seat_statuses()
 
         self.deal_flop()
 
@@ -34,7 +34,7 @@ class Round:
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
-            return
+            return self.get_seat_statuses()
 
         self.deal_turn()
 
@@ -43,7 +43,7 @@ class Round:
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
-            return
+            return self.get_seat_statuses()
 
         self.deal_river()
 
@@ -53,11 +53,14 @@ class Round:
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
-            return
+            return self.get_seat_statuses()
 
         winners = self.winners_from_remaining()
         self.distribute_winnings(winners)
 
+        return self.get_seat_statuses()
+
+    def get_seat_statuses(self):
         still_in = deque(seat for seat in self.seats if seat.chips > 0)
         gone_out = [Seat for seat in self.seats if seat.chips == 0]
 
@@ -106,16 +109,15 @@ class Round:
         hands = []
 
         for seat in self.seats:
-            hand = get_best_hand(seat)
+            hand = get_best_hand(seat.get_cards(), self.cards)
             hands.append((seat, hand))
 
         best_hand = max(hands, key=lambda seat_hand_pair: seat_hand_pair[1])
-        return [seat_hand_pair for seat_hand_pair in hands if seat_hand_pair[1] == best_hand[1]]
+        return [seat_hand_pair[0] for seat_hand_pair in hands if seat_hand_pair[1] == best_hand[1]]
 
     def distribute_winnings(self, winners):
-        winners.sort(key=Seat.pot)
-        winners_by_deal_order = [
-            seat for seat in self.seats if seat in winners]
+        winners.sort(key=lambda seat: seat.pot)
+        winners_by_deal_order = [seat for seat in self.seats if seat in winners]
 
         while len(winners) > 0:
             winner = winners[0]
