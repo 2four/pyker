@@ -12,34 +12,38 @@ class Card:
         self.number = number
 
     def __str__(self):
-        return "{} of {}".format(self.number.name, self.suit.name)
+        return "{}{}".format(self.number.print_value, self.suit.value)
 
     def __lt__(self, other):
         return self.number < other.number
 
 
 class Suit(Enum):
-    SPADES = 0
-    HEARTS = 1
-    DIAMONDS = 2
-    CLUBS = 3
+    SPADES = "♤"
+    HEARTS = "♡"
+    DIAMONDS = "♢"
+    CLUBS = "♧"
 
 
-class Number(IntEnum):
-    ACE_LOW = 1
-    TWO = 2
-    THREE = 3
-    FOUR = 4
-    FIVE = 5
-    SIX = 6
-    SEVEN = 7
-    EIGHT = 8
-    NINE = 9
-    TEN = 10
-    JACK = 11
-    QUEEN = 12
-    KING = 13
-    ACE = 14
+class Number(Enum):
+    ACE_LOW = (1, "A")
+    TWO = (2, "2")
+    THREE = (3, "3")
+    FOUR = (4, "4")
+    FIVE = (5, "5")
+    SIX = (6, "6")
+    SEVEN = (7, "7")
+    EIGHT = (8, "8")
+    NINE = (9, "9")
+    TEN = (10, "10")
+    JACK = (11, "J")
+    QUEEN = (12, "Q")
+    KING = (13, "K")
+    ACE = (14, "A")
+
+    def __init__(self, int_value, print_value):
+        self.int_value = int_value
+        self.print_value = print_value
 
 
 class Deck:
@@ -253,7 +257,7 @@ def get_hand(card_set):
     flush = get_flush(card_set)
     straight = get_straight(card_set)
 
-    if flush and straight and card_set[0].number == Number.ACE:
+    if flush and straight and card_set[0].number.int_value == Number.ACE:
         return RoyalFlush()
 
     if flush and straight:
@@ -265,7 +269,7 @@ def get_hand(card_set):
     if straight:
         return straight
 
-    return HighCards([card.number for card in card_set])
+    return HighCards([card.number.int_value for card in card_set])
 
 
 def get_number_distribution(card_set):
@@ -273,9 +277,9 @@ def get_number_distribution(card_set):
 
     for card in card_set:
         try:
-            number_counts[card.number] += 1
+            number_counts[card.number.int_value] += 1
         except KeyError:
-            number_counts[card.number] = 1
+            number_counts[card.number.int_value] = 1
 
     return number_counts
 
@@ -332,13 +336,13 @@ def get_pair(number_counts):
 def get_flush(card_set):
     suits = set(card.suit for card in card_set)
     if len(suits) == 1:
-        numbers = [cards.number for cards in card_set]
+        numbers = [cards.number.int_value for cards in card_set]
 
         return Flush(numbers)
 
 
 def get_straight(card_set):
-    numbers = [card.number for card in card_set]
+    numbers = [card.number.int_value for card in card_set]
 
     if numbers == [Number.ACE, Number.FIVE, Number.FOUR, Number.THREE, Number.TWO]:
         return Straight(Number.FIVE)
