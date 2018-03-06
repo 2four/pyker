@@ -21,6 +21,9 @@ class BettingRound:
     def play(self):
         last_action = None
 
+        # start left of small blind
+        self.filtered_seats.rotate(-3)
+
         while True:
             seat = self.filtered_seats[0]
 
@@ -37,6 +40,7 @@ class BettingRound:
             self.resolve_action(seat, last_action)
 
             if len(self.filtered_seats) == 1:
+                logging.info("Player {} wins".format(self.filtered_seats[0].index))
                 self.move_all_bets_to_pots()
                 return list(self.filtered_seats)
 
@@ -46,6 +50,10 @@ class BettingRound:
                 return [seat for seat in self.remaining_seats if seat in self.filtered_seats]
 
             self.filtered_seats.rotate(-1)
+            self.align_seat_deques()
+
+    def align_seat_deques(self):
+        while self.seats[0] != self.filtered_seats[0]:
             self.seats.rotate(-1)
 
     def move_all_bets_to_pots(self):

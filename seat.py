@@ -1,3 +1,6 @@
+import logging
+
+
 class Seat:
 
     def __init__(self, player, index, chips):
@@ -30,6 +33,7 @@ class Seat:
 
     def bet_chips(self, num_chips):
         bet = min(self.chips, num_chips)
+        logging.debug("Player {} puts {} chips in".format(self.index, bet))
         self.chips -= bet
         self.bet += bet
 

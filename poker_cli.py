@@ -12,10 +12,10 @@ def main():
     logging.basicConfig(
         format=_red + "%(levelname)s][%(asctime)s] %(message)s" + _normal,
         datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO
+        level=logging.DEBUG
     )
 
-    players = [HumanPlayer(i) for i in range(3)]
+    players = [HumanPlayer(i) for i in range(4)]
     table = Table(players, 8000, 25)
     table.play()
 
