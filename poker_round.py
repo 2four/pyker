@@ -1,3 +1,5 @@
+import logging
+
 from poker import Seat
 from card import Deck, get_best_hand
 from collections import deque
@@ -7,7 +9,7 @@ from betting_round import BettingRound
 class Round:
 
     def __init__(self, seats, small_blind, min_denomination):
-        print("\n=================== NEW ROUND ===================")
+        logging.info("NEW ROUND")
         self.seats = seats
         self.small_blind = small_blind
         self.min_denomination = min_denomination
@@ -28,41 +30,54 @@ class Round:
             return self.get_seat_statuses()
 
         self.deal_flop()
+        logging.info("Flop  {}".format(" ".join(str(card) for card in self.cards)))
 
-        second_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
-        remaining_seats = second_betting_round.play()
+        if self.players_can_bet(remaining_seats):
+            second_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
+            remaining_seats = second_betting_round.play()
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
             return self.get_seat_statuses()
 
         self.deal_turn()
+        logging.info("Turn  {}".format(" ".join(str(card) for card in self.cards)))
 
-        third_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
-        remaining_seats = third_betting_round.play()
+        if self.players_can_bet(remaining_seats):
+            third_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
+            remaining_seats = third_betting_round.play()
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
             return self.get_seat_statuses()
 
         self.deal_river()
+        logging.info("River {}".format(" ".join(str(card) for card in self.cards)))
 
-        final_betting_round = BettingRound(
-            self.seats, remaining_seats, self.cards, min_raise)
-        remaining_seats = final_betting_round.play()
+        if self.players_can_bet(remaining_seats):
+            final_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
+            remaining_seats = final_betting_round.play()
 
         if len(remaining_seats) == 1:
             self.distribute_winnings(remaining_seats)
             return self.get_seat_statuses()
 
         winners = self.winners_from_remaining()
+
+        winner_string = ", ".join(str(winner.index) for winner in winners)
+        logging.info("Winning player(s): {}".format(winner_string))
+
         self.distribute_winnings(winners)
 
         return self.get_seat_statuses()
 
+    def players_can_bet(self, remaining_seats):
+        can_bet = sum(1 for seat in remaining_seats if seat.chips > 0)
+        return can_bet > 1
+
     def get_seat_statuses(self):
         still_in = deque(seat for seat in self.seats if seat.chips > 0)
-        gone_out = [Seat for seat in self.seats if seat.chips == 0]
+        gone_out = [seat for seat in self.seats if seat.chips == 0]
 
         return still_in, gone_out
 

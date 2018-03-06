@@ -1,4 +1,4 @@
-from enum import Enum, IntEnum
+from enum import Enum
 from itertools import combinations
 from random import shuffle
 
@@ -15,7 +15,7 @@ class Card:
         return "{}{}".format(self.number.print_value, self.suit.value)
 
     def __lt__(self, other):
-        return self.number < other.number
+        return self.number.int_value < other.number.int_value
 
 
 class Suit(Enum):
@@ -66,6 +66,9 @@ class Deck:
 
 class Hand:
 
+    def __init__(self, *args):
+        self.cards = list(args)
+
     def __lt__(self, other):
         if self.rank() == other.rank():
             return self.less_than(other)
@@ -76,7 +79,13 @@ class Hand:
         return not self < other and not other < self
 
     def less_than(self, other):
-        raise NotImplementedError()
+        for card_1, card_2 in zip(self.cards, other.cards):
+            if card_1 < card_2:
+                return True
+            if card_1 > card_2:
+                return False
+
+        return False
 
     @classmethod
     def rank(cls):
@@ -87,49 +96,37 @@ class RoyalFlush(Hand):
 
     _rank = 9
 
+    def __init__(self):
+        super().__init__()
+
 
 class StraightFlush(Hand):
 
     _rank = 8
 
     def __init__(self, highest_card):
-        self.highest_card = highest_card
-
-    def less_than(self, other):
-        return self.highest_card < other.highest_card
+        super().__init__(highest_card)
 
 
 class FourOfAKind(Hand):
 
     _rank = 7
 
-    def __init__(self, four):
-        self.four = four
-
-    def less_than(self, other):
-        return self.four < other.four
+    def __init__(self, four, high_card):
+        super().__init__(four, high_card)
 
 
 class FullHouse(Hand):
 
     _rank = 6
 
-    def __init__(self, three):
-        self.three = three
-
-    def less_than(self, other):
-        return self.three < other.three
+    def __init__(self, three, pair):
+        super().__init__(three, pair)
 
 
 class Flush(Hand):
 
     _rank = 5
-
-    def __init__(self, cards):
-        self.cards = HighCards(cards)
-
-    def less_than(self, other):
-        return self.cards.less_than(other.cards)
 
 
 class Straight(Hand):
@@ -137,21 +134,15 @@ class Straight(Hand):
     _rank = 4
 
     def __init__(self, highest_card):
-        self.highest_card = highest_card
-
-    def less_than(self, other):
-        return self.highest_card < other.highest_card
+        super().__init__(highest_card)
 
 
 class ThreeOfAKind(Hand):
 
     _rank = 3
 
-    def __init__(self, three):
-        self.three = three
-
-    def less_than(self, other):
-        return self.three < other.three
+    def __init__(self, three, cards):
+        super().__init__(three, cards)
 
 
 class TwoPair(Hand):
@@ -159,27 +150,7 @@ class TwoPair(Hand):
     _rank = 2
 
     def __init__(self, high_pair, low_pair, single):
-        self.high_pair = high_pair
-        self.low_pair = low_pair
-        self.single = single
-
-    def less_than(self, other):
-        if self.high_pair < other.high_pair:
-            return True
-
-        if self.high_pair > other.high_pair:
-            return False
-
-        if self.low_pair < other.low_pair:
-            return True
-
-        if self.low_pair > other.low_pair:
-            return False
-
-        if self.single < other.single:
-            return True
-
-        return False
+        super().__init__(high_pair, low_pair, single)
 
 
 class OnePair(Hand):
@@ -187,34 +158,12 @@ class OnePair(Hand):
     _rank = 1
 
     def __init__(self, pair, cards):
-        self.pair = pair
-        self.high_cards = HighCards(cards)
-
-    def less_than(self, other):
-        if self.pair < other.pair:
-            return True
-
-        if self.pair > other.pair:
-            return False
-
-        return self.high_cards.less_than(other.high_cards)
+        super().__init__(pair, *cards)
 
 
 class HighCards(Hand):
 
     _rank = 0
-
-    def __init__(self, cards):
-        self.cards = cards
-
-    def less_than(self, other):
-        for card_1, card_2 in zip(self.cards, other.cards):
-            if card_1 < card_2:
-                return True
-            if card_1 > card_2:
-                return False
-
-        return False
 
 
 def get_best_hand(hole_cards, community_cards):
@@ -285,9 +234,11 @@ def get_number_distribution(card_set):
 
 
 def get_four_of_a_kind(number_counts):
-    for number, count in number_counts.items():
-        if count == 4:
-            return FourOfAKind(number)
+    if 4 in number_counts.values():
+        four, = [number for number, count in number_counts.items() if count == 3]
+        high_card = list(number_counts.keys())
+        high_card.remove(four)
+        return FourOfAKind(four, high_card)
 
     return None
 
@@ -295,7 +246,9 @@ def get_four_of_a_kind(number_counts):
 def get_full_house(number_counts):
     if 2 in number_counts.values() and 3 in number_counts.values():
         triple, = [number for number, count in number_counts.items() if count == 3]
-        return FullHouse(triple)
+        pair = list(number_counts.keys())
+        pair.remove(triple)
+        return FullHouse(triple, pair)
 
     return None
 
@@ -303,7 +256,9 @@ def get_full_house(number_counts):
 def get_three_of_a_kind(number_counts):
     if 3 in number_counts.values():
         triple, = [number for number, count in number_counts.items() if count == 3]
-        return ThreeOfAKind(triple)
+        high_cards = list(number_counts.keys())
+        high_cards.remove(triple)
+        return ThreeOfAKind(triple, high_cards)
 
     return None
 

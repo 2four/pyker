@@ -1,4 +1,5 @@
 from collections import deque
+import logging
 
 from turn import Turn
 from action import *
@@ -7,7 +8,7 @@ from action import *
 class BettingRound:
 
     def __init__(self, seats, remaining_seats, cards, min_raise, bet=0):
-        print("\n=================== BETTING ROUND ===================")
+        logging.info("BETTING ROUND")
         self.seats = deque(seats)
         self.remaining_seats = remaining_seats
         self.filtered_seats = deque(remaining_seats)
@@ -59,5 +60,8 @@ class BettingRound:
             seat.bet_chips(self.current_bet)
         elif isinstance(action, Raise):
             self.end_seat = self.filtered_seats[-1]
-            self.current_bet += action.amount
+
+            raise_amount = min(seat.chips - self.current_bet, action.amount)
+
+            self.current_bet += raise_amount
             seat.bet_chips(self.current_bet)

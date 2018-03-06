@@ -12,7 +12,6 @@ class Table:
         self.min_denomination = min_denomination
         self.player_positions = []
         self.blind_structure = Blinds(buy_in)
-        self.reward_structure = []
 
         self.player_indices = range(len(players))
 
@@ -31,11 +30,13 @@ class Table:
 
             self.seats.rotate(-1)
 
-        self.player_positions.append(list(self.seat))
+        self.player_positions.append(list(self.seats))
+        self.distribute_rewards()
 
     def distribute_rewards(self):
         reward_normalizer = self.player_indices[-1] * self.player_indices[-1]
         ungrouped_rewards = [i * i / reward_normalizer for i in self.player_indices]
+        ungrouped_rewards.reverse()
 
         for position_group in self.player_positions:
             reward_sum = 0
@@ -46,7 +47,7 @@ class Table:
             reward = reward_sum / len(position_group)
 
             for seat in position_group:
-                seat.player.give_reward(reward)
+                seat.give_reward(reward)
 
 
 class Player:

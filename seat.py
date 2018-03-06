@@ -29,8 +29,7 @@ class Seat:
         self.card_2 = None
 
     def bet_chips(self, num_chips):
-        chips_available = min(self.chips, num_chips)
-        bet = chips_available - self.bet
+        bet = min(self.chips, num_chips - self.bet)
         self.chips -= bet
         self.bet += bet
 
@@ -55,3 +54,6 @@ class Seat:
 
     def can_perform_action(self):
         return self.chips > 0
+
+    def give_reward(self, reward):
+        self.player.give_reward(reward)
