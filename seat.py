@@ -29,7 +29,7 @@ class Seat:
         self.card_2 = None
 
     def bet_chips(self, num_chips):
-        bet = min(self.chips, num_chips - self.bet)
+        bet = min(self.chips, num_chips)
         self.chips -= bet
         self.bet += bet
 

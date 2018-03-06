@@ -62,7 +62,7 @@ class Round:
             self.distribute_winnings(remaining_seats)
             return self.get_seat_statuses()
 
-        winners = self.winners_from_remaining()
+        winners = self.winners_from_remaining(remaining_seats)
 
         winner_string = ", ".join(str(winner.index) for winner in winners)
         logging.info("Winning player(s): {}".format(winner_string))
@@ -120,10 +120,10 @@ class Round:
         # deal turn
         self.cards.append(self.deck.deal())
 
-    def winners_from_remaining(self):
+    def winners_from_remaining(self, remaining_seats):
         hands = []
 
-        for seat in self.seats:
+        for seat in remaining_seats:
             hand = get_best_hand(seat.get_cards(), self.cards)
             hands.append((seat, hand))
 

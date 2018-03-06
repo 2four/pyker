@@ -18,7 +18,6 @@ class HumanPlayer(Player):
         self.game_state = game_state
 
     def get_action(self):
-        print("")
         print("Player number  : {}".format(self.index))
         print("Hole cards     : {} {}".format(self.card_1, self.card_2))
         print("Table cards    : {}".format(" ".join(str(card) for card in self.game_state.cards)))
@@ -89,4 +88,4 @@ class HumanPlayer(Player):
         return True
 
     def give_reward(self, reward):
-        print("You got rewarded {}!".format(reward))
+        print("Player {} rewarded {}!".format(self.index, reward))

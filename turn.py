@@ -1,3 +1,5 @@
+import logging
+
 from collections import deque
 
 
@@ -12,6 +14,7 @@ class Turn:
         self.min_raise = min_raise
 
     def play(self):
+        logging.info("Player {}'s go".format(self.seats[0].index))
         self.supply_state_to_seats()
         return self.get_action()
 

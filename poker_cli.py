@@ -4,10 +4,14 @@ from human_player import HumanPlayer
 from poker import Table
 
 
+_red = "\x1b[31m["
+_normal = "\x1b[0m"
+
+
 def main():
     logging.basicConfig(
-        format='[%(levelname)s][%(asctime)s] %(message)s',
-        datefmt='%m/%d/%Y %H:%M:%S',
+        format=_red + "%(levelname)s][%(asctime)s] %(message)s" + _normal,
+        datefmt="%m/%d/%Y %H:%M:%S",
         level=logging.INFO
     )
 

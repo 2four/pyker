@@ -8,7 +8,7 @@ from action import *
 class BettingRound:
 
     def __init__(self, seats, remaining_seats, cards, min_raise, bet=0):
-        logging.info("BETTING ROUND")
+        logging.info("NEW BETTING ROUND")
         self.seats = deque(seats)
         self.remaining_seats = remaining_seats
         self.filtered_seats = deque(remaining_seats)
@@ -56,12 +56,20 @@ class BettingRound:
         if isinstance(action, Fold):
             del self.filtered_seats[0]
             self.filtered_seats.rotate()
+            logging.info("Player {} folds".format(seat.index))
         elif isinstance(action, CheckCall):
-            seat.bet_chips(self.current_bet)
+            call_amount = self.current_bet - seat.bet
+            seat.bet_chips(call_amount)
+
+            if call_amount == 0:
+                logging.info("Player {} checks".format(seat.index))
+            else:
+                logging.info("Player {} calls, putting in {}".format(seat.index, call_amount))
         elif isinstance(action, Raise):
             self.end_seat = self.filtered_seats[-1]
 
             raise_amount = min(seat.chips - self.current_bet, action.amount)
+            logging.info("Player {} raises {}".format(seat.index, raise_amount))
 
-            self.current_bet += raise_amount
+            self.current_bet += raise_amount - seat.bet
             seat.bet_chips(self.current_bet)
