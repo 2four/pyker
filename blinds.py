@@ -26,18 +26,19 @@ class Blinds:
         self.counter += 1
         if self.is_in_increase_range() and self.check_for_blind_increase():
             self.small_blind = self.next_blinds()
+            self.counter = 0
 
         return self.small_blind
 
     def is_in_increase_range(self):
-        return self.counter >= self.INCREASE_VARIANCE - self.INCREASE_FREQUENCY
+        return self.counter >= self.INCREASE_FREQUENCY - self.INCREASE_VARIANCE
 
     def check_for_blind_increase(self):
         return randint(0, self.INCREASE_VARIANCE + self.INCREASE_FREQUENCY - self.counter) == 0
 
     def next_blinds(self):
         self.increases += 1
-        if self.increases > len(self.initial_blinds()):
+        if self.increases >= len(self.initial_blinds()):
             self.small_blind *= 2
             return self.small_blind
         else:

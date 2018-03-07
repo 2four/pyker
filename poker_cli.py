@@ -15,7 +15,7 @@ def main():
         level=logging.DEBUG
     )
 
-    players = [HumanPlayer(i) for i in range(4)]
+    players = [HumanPlayer(i) for i in range(8)]
     table = Table(players, 8000, 25)
     table.play()
 

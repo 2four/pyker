@@ -1,9 +1,8 @@
 import logging
 
-from poker import Seat
 from card import Deck, get_best_hand
 from collections import deque
-from betting_round import BettingRound
+from betting_round import BettingRound, PreFlop
 
 
 class Round:
@@ -22,7 +21,7 @@ class Round:
         starting_bet = self.small_blind * 2
         remaining_seats = self.seats
 
-        first_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise, starting_bet)
+        first_betting_round = PreFlop(self.seats, remaining_seats, self.cards, min_raise, starting_bet)
         remaining_seats = first_betting_round.play()
 
         if len(remaining_seats) == 1:

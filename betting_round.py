@@ -14,15 +14,12 @@ class BettingRound:
         self.filtered_seats = deque(remaining_seats)
         self.cards = cards
         self.min_raise = min_raise
-
         self.current_bet = bet
-        self.end_seat = self.filtered_seats[-1]
 
     def play(self):
         last_action = None
-
-        # start left of small blind
-        self.filtered_seats.rotate(-3)
+        self.end_seat = self.filtered_seats[-1]
+        self.align_seat_deques()
 
         while True:
             seat = self.filtered_seats[0]
@@ -76,8 +73,21 @@ class BettingRound:
         elif isinstance(action, Raise):
             self.end_seat = self.filtered_seats[-1]
 
-            raise_amount = min(seat.chips - self.current_bet, action.amount)
+            call_amount = self.current_bet - seat.bet
+            seat.bet_chips(call_amount)
+
+            raise_amount = seat.bet_chips(action.amount)
+            self.current_bet += raise_amount
+
             logging.info("Player {} raises {}".format(seat.index, raise_amount))
 
-            self.current_bet += raise_amount - seat.bet
-            seat.bet_chips(self.current_bet)
+
+class PreFlop(BettingRound):
+
+    def __init__(self, seats, remaining_seats, cards, min_raise, big_blind):
+        super().__init__(seats, remaining_seats, cards, min_raise, big_blind)
+
+    def play(self):
+        # start left of small blind
+        self.filtered_seats.rotate(-3)
+        return super().play()

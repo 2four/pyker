@@ -88,4 +88,4 @@ class HumanPlayer(Player):
         return True
 
     def give_reward(self, reward):
-        print("Player {} rewarded {}!".format(self.index, reward))
+        print("Player {} rewarded {:.2f}!".format(self.index, reward))

@@ -37,6 +37,8 @@ class Seat:
         self.chips -= bet
         self.bet += bet
 
+        return bet
+
     def move_bet_to_pot(self):
         self.pot += self.bet
         self.bet = 0
