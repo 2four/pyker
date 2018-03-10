@@ -3,6 +3,8 @@ import logging
 
 class Seat:
 
+    LOGGER = logging.getLogger(name="Seat")
+
     def __init__(self, player, index, chips):
         self.player = player
         self.index = index
@@ -10,6 +12,8 @@ class Seat:
         self.bet = 0
         self.pot = 0
         self.folded = False
+
+        self.player.set_index(index)
 
     def set_card_1(self, card_1):
         self.card_1 = card_1
@@ -21,7 +25,7 @@ class Seat:
         return self.card_1, self.card_2
 
     def supply_state(self, game_state):
-        self.player.supply_state(self.card_1, self.card_2, game_state)
+        self.player.supply_state(self.card_1, self.card_2, self.bet, game_state)
 
     def get_action(self):
         return self.player.get_action()
@@ -33,7 +37,7 @@ class Seat:
 
     def bet_chips(self, num_chips):
         bet = min(self.chips, num_chips)
-        logging.debug("Player {} puts {} chips in".format(self.index, bet))
+        self.LOGGER.debug("Player {} puts {} chips in".format(self.index, bet))
         self.chips -= bet
         self.bet += bet
 

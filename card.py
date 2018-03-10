@@ -12,38 +12,40 @@ class Card:
         self.number = number
 
     def __str__(self):
-        return "{}{}".format(self.number.print_value, self.suit.value)
+        return "{}{}".format(self.number.print_value, self.suit.print_value)
 
     def __lt__(self, other):
         return self.number.int_value < other.number.int_value
 
 
-class Suit(Enum):
-    SPADES = "♤"
-    HEARTS = "♡"
-    DIAMONDS = "♢"
-    CLUBS = "♧"
-
-
-class Number(Enum):
-    ACE_LOW = (1, "A")
-    TWO = (2, "2")
-    THREE = (3, "3")
-    FOUR = (4, "4")
-    FIVE = (5, "5")
-    SIX = (6, "6")
-    SEVEN = (7, "7")
-    EIGHT = (8, "8")
-    NINE = (9, "9")
-    TEN = (10, "10")
-    JACK = (11, "J")
-    QUEEN = (12, "Q")
-    KING = (13, "K")
-    ACE = (14, "A")
+class PrintIntEnum(Enum):
 
     def __init__(self, int_value, print_value):
         self.int_value = int_value
         self.print_value = print_value
+
+
+class Suit(PrintIntEnum):
+    SPADES = (0, "♤")
+    HEARTS = (1, "♡")
+    DIAMONDS = (2, "♢")
+    CLUBS = (3, "♧")
+
+
+class Number(PrintIntEnum):
+    TWO = (0, "2")
+    THREE = (1, "3")
+    FOUR = (2, "4")
+    FIVE = (3, "5")
+    SIX = (4, "6")
+    SEVEN = (5, "7")
+    EIGHT = (6, "8")
+    NINE = (7, "9")
+    TEN = (8, "10")
+    JACK = (9, "J")
+    QUEEN = (10, "Q")
+    KING = (11, "K")
+    ACE = (12, "A")
 
 
 class Deck:
@@ -52,8 +54,6 @@ class Deck:
         self.cards = []
         for suit in Suit:
             for number in Number:
-                if number == Number.ACE_LOW:
-                    continue
                 card = Card(suit, number)
                 self.cards.append(card)
 
@@ -134,6 +134,7 @@ class Straight(Hand):
     _rank = 4
 
     def __init__(self, highest_card):
+        self.highest_card = highest_card
         super().__init__(highest_card)
 
 
@@ -235,7 +236,7 @@ def get_number_distribution(card_set):
 
 def get_four_of_a_kind(number_counts):
     if 4 in number_counts.values():
-        four, = [number for number, count in number_counts.items() if count == 3]
+        four, = [number for number, count in number_counts.items() if count == 4]
         high_card = list(number_counts.keys())
         high_card.remove(four)
         return FourOfAKind(four, high_card)

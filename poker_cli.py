@@ -1,6 +1,7 @@
 import logging
 
 from human_player import HumanPlayer
+from network_player import NetworkPlayer
 from poker import Table
 
 
@@ -15,7 +16,8 @@ def main():
         level=logging.DEBUG
     )
 
-    players = [HumanPlayer(i) for i in range(8)]
+    players = [HumanPlayer() for i in range(3)]
+    # players.append(NetworkPlayer(None, 15, 4, 25))
     table = Table(players, 8000, 25)
     table.play()
 

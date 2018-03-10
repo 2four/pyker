@@ -1,4 +1,5 @@
 from random import randint
+import logging
 
 
 class Blinds:
@@ -27,6 +28,7 @@ class Blinds:
         if self.is_in_increase_range() and self.check_for_blind_increase():
             self.small_blind = self.next_blinds()
             self.counter = 0
+            logging.debug("Small blind increaseed to {}".format(self.small_blind))
 
         return self.small_blind
 

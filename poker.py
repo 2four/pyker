@@ -1,4 +1,5 @@
 from collections import deque
+import logging
 
 from seat import Seat
 from poker_round import Round
@@ -6,6 +7,8 @@ from blinds import Blinds
 
 
 class Table:
+
+    LOGGER = logging.getLogger(name="Table")
 
     def __init__(self, players, buy_in, min_denomination):
         self.seats = deque()
@@ -20,6 +23,7 @@ class Table:
             self.seats.append(seat)
 
     def play(self):
+        self.LOGGER.info("NEW TABLE")
         while len(self.seats) > 1:
             small_blind = self.blind_structure.next_round()
             poker_round = Round(self.seats, small_blind, self.min_denomination)
@@ -34,7 +38,7 @@ class Table:
         self.distribute_rewards()
 
     def distribute_rewards(self):
-        reward_normalizer = self.player_indices[-1] * self.player_indices[-1]
+        reward_normalizer = sum(i * i for i in self.player_indices)
         ungrouped_rewards = [i * i / reward_normalizer for i in self.player_indices]
         ungrouped_rewards.reverse()
 
@@ -48,15 +52,3 @@ class Table:
 
             for seat in position_group:
                 seat.give_reward(reward)
-
-
-class Player:
-
-    def supply_state(self, card_1, card_2, game_state):
-        raise NotImplementedError()
-
-    def get_action(self):
-        raise NotImplementedError()
-
-    def give_reward(self, reward):
-        raise NotImplementedError()

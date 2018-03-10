@@ -5,16 +5,17 @@ from collections import deque
 
 class Turn:
 
-    def __init__(self, seats, filtered_seats, cards, current_bet, last_action, min_raise):
+    LOGGER = logging.getLogger("Turn")
+
+    def __init__(self, seats, filtered_seats, cards, current_bet, last_action):
         self.seats = seats
         self.filtered_seats = filtered_seats
         self.cards = cards
         self.current_bet = current_bet
         self.last_action = last_action
-        self.min_raise = min_raise
 
     def play(self):
-        logging.info("Player {}'s go".format(self.seats[0].index))
+        self.LOGGER.debug("Player {}'s go".format(self.seats[0].index))
         self.supply_state_to_seats()
         return self.get_action()
 
@@ -30,10 +31,6 @@ class Turn:
         folded = deque([1 if seat not in self.filtered_seats else 0 for seat in self.seats])
 
         for seat in self.seats:
-            player_chips.rotate()
-            turn_indicator.rotate()
-            folded.rotate()
-
             seat.supply_state(GameState(
                 self.cards,
                 self.current_bet,
@@ -43,6 +40,10 @@ class Turn:
                 turn_indicator,
                 folded,
             ))
+
+            player_chips.rotate(-1)
+            turn_indicator.rotate(-1)
+            folded.rotate(-1)
 
     def get_turn_indicator(self, seat):
         turn_indicator = [False] * len(self.seats)

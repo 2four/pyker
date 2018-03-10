@@ -7,8 +7,10 @@ from betting_round import BettingRound, PreFlop
 
 class Round:
 
+    LOGGER = logging.getLogger(name="Round")
+
     def __init__(self, seats, small_blind, min_denomination):
-        logging.info("NEW ROUND")
+        self.LOGGER.debug("NEW ROUND")
         self.seats = seats
         self.small_blind = small_blind
         self.min_denomination = min_denomination
@@ -17,11 +19,10 @@ class Round:
     def play(self):
         self.shuffle_and_deal()
         self.put_in_blinds()
-        min_raise = self.small_blind
         starting_bet = self.small_blind * 2
         remaining_seats = self.seats
 
-        first_betting_round = PreFlop(self.seats, remaining_seats, self.cards, min_raise, starting_bet)
+        first_betting_round = PreFlop(self.seats, remaining_seats, self.cards, starting_bet)
         remaining_seats = first_betting_round.play()
 
         if len(remaining_seats) == 1:
@@ -29,10 +30,10 @@ class Round:
             return self.get_seat_statuses()
 
         self.deal_flop()
-        logging.info("Flop  {}".format(" ".join(str(card) for card in self.cards)))
+        self.LOGGER.debug("Flop  {}".format(" ".join(str(card) for card in self.cards)))
 
         if self.players_can_bet(remaining_seats):
-            second_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
+            second_betting_round = BettingRound(self.seats, remaining_seats, self.cards)
             remaining_seats = second_betting_round.play()
 
         if len(remaining_seats) == 1:
@@ -40,10 +41,10 @@ class Round:
             return self.get_seat_statuses()
 
         self.deal_turn()
-        logging.info("Turn  {}".format(" ".join(str(card) for card in self.cards)))
+        self.LOGGER.debug("Turn  {}".format(" ".join(str(card) for card in self.cards)))
 
         if self.players_can_bet(remaining_seats):
-            third_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
+            third_betting_round = BettingRound(self.seats, remaining_seats, self.cards)
             remaining_seats = third_betting_round.play()
 
         if len(remaining_seats) == 1:
@@ -51,10 +52,10 @@ class Round:
             return self.get_seat_statuses()
 
         self.deal_river()
-        logging.info("River {}".format(" ".join(str(card) for card in self.cards)))
+        self.LOGGER.debug("River {}".format(" ".join(str(card) for card in self.cards)))
 
         if self.players_can_bet(remaining_seats):
-            final_betting_round = BettingRound(self.seats, remaining_seats, self.cards, min_raise)
+            final_betting_round = BettingRound(self.seats, remaining_seats, self.cards)
             remaining_seats = final_betting_round.play()
 
         if len(remaining_seats) == 1:
@@ -64,7 +65,7 @@ class Round:
         winners = self.winners_from_remaining(remaining_seats)
 
         winner_string = ", ".join(str(winner.index) for winner in winners)
-        logging.info("Winning player(s): {}".format(winner_string))
+        self.LOGGER.debug("Winning player(s): {}".format(winner_string))
 
         self.distribute_winnings(winners)
 
