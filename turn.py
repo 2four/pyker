@@ -17,7 +17,11 @@ class Turn:
     def play(self):
         self.LOGGER.debug("Player {}'s go".format(self.seats[0].index))
         self.supply_state_to_seats()
-        return self.get_action()
+
+        if self.filtered_seats[0].chips > 0:
+            return self.get_action()
+        else:
+            return None
 
     def get_action(self):
         seat = self.filtered_seats[0]

@@ -1,16 +1,19 @@
 from collections import deque
 import logging
+from multiprocessing import Process
 
 from seat import Seat
 from poker_round import Round
 from blinds import Blinds
 
 
-class Table:
+class Table(Process):
 
     LOGGER = logging.getLogger(name="Table")
 
     def __init__(self, players, buy_in, min_denomination):
+        Process.__init__(self)
+
         self.seats = deque()
         self.min_denomination = min_denomination
         self.player_positions = []
@@ -21,6 +24,9 @@ class Table:
         for player, index in zip(players, self.player_indices):
             seat = Seat(player, index, buy_in)
             self.seats.append(seat)
+
+    def run(self):
+        self.play()
 
     def play(self):
         self.LOGGER.info("NEW TABLE")

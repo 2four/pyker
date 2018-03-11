@@ -34,8 +34,11 @@ class BettingRound:
                 last_action,
             )
 
-            last_action = turn.play()
-            self.resolve_action(seat, last_action)
+            action = turn.play()
+
+            if action:
+                last_action = action
+                self.resolve_action(seat, action)
 
             if len(self.filtered_seats) == 1:
                 self.LOGGER.debug("Player {} wins".format(self.filtered_seats[0].index))

@@ -3,6 +3,7 @@ from math import ceil, log2
 import random
 import logging
 
+from copy import deepcopy
 from poker import Table
 from network_player import NetworkPlayer
 
@@ -25,8 +26,12 @@ class Game:
     def play(self):
         self.LOGGER.info("NEW GAME")
         tables = self.get_tables()
+
         for table in tables:
-            table.play()
+            table.start()
+
+        for table in tables:
+            table.join()
 
     def get_tables(self):
         shuffled_players = list(self.players)
@@ -133,30 +138,67 @@ class Tournament:
             game = Game(self.players, self.table_size, self.buy_in, self.min_denomination)
             game.play()
 
+        for player in self.players:
+            player.genome.SetEvaluated()
 
-def evaluate(genome):
-        # this creates a neural network (phenotype) from the genome
-        net = NEAT.NeuralNetwork()
-        genome.BuildPhenotype(net)
-        # let's input just one pattern to the net, activate it once and get the output
-        net.Input([1, 0, 1])
-        net.Activate()
-        output = net.Output()
-        # the output can be used as any other Python iterable. For the purposes of the tutorial,
-        # we will consider the fitness of the individual to be the neural network that outputs
-        # constantly 0.0 from the first output (the second output is ignored)
-        fitness = 1.0 - output[0]
-        return fitness
+
+class PlayOff:
+
+    LOGGER = logging.getLogger(name="PlayOff")
+
+    def __init__(self, previous_best_genomes, current_best_genomes, table_size, money_vector_size, buy_in, min_denomination, num_rounds):
+        self.previous_best_genomes = previous_best_genomes
+        self.current_best_genomes = current_best_genomes
+        self.table_size = table_size
+        self.money_vector_size = money_vector_size
+        self.buy_in = buy_in
+        self.min_denomination = min_denomination
+        self.num_rounds = num_rounds
+        self.create_players()
+
+    def create_players(self):
+        self.players = []
+        self.previous_players = []
+        self.current_players = []
+
+        for genome in self.previous_best_genomes:
+            player = NetworkPlayer(genome, self.table_size, self.money_vector_size, self.min_denomination)
+            self.players.append(player)
+            self.previous_players.append(player)
+
+        for genome in self.current_best_genomes:
+            player = NetworkPlayer(genome, self.table_size, self.money_vector_size, self.min_denomination)
+            self.players.append(player)
+            self.current_players.append(player)
+
+    def play(self):
+        for player in self.players:
+            player.genome.SetFitness(0)
+
+        self.LOGGER.info("NEW PLAYOFF")
+        for round in range(self.num_rounds):
+            table = Table(self.players, self.buy_in, self.min_denomination)
+            table.play()
+
+        previous_genome_score = sum(player.genome.GetFitness() for player in self.previous_players)
+        current_genome_score = sum(player.genome.GetFitness() for player in self.current_players)
+        difference = current_genome_score - previous_genome_score
+        self.LOGGER.warn("Score difference between best players: {}".format(difference))
+
+
+def _get_best_n_genomes(population, n):
+    num_genomes = population.NumGenomes()
+    genomes = [population.AccessGenomeByIndex(genome_index) for genome_index in range(num_genomes)]
+    genomes.sort(key=lambda genome: genome.GetFitness(), reverse=True)
+    return [deepcopy(genome) for genome in genomes[:n]]
 
 
 def main():
     logging.basicConfig(
         format=_red + "[%(levelname)s][%(asctime)s][%(name)s] %(message)s" + _normal,
         datefmt="%m/%d/%Y %H:%M:%S",
-        level=logging.INFO
+        level=logging.WARN
     )
-
-    logger = logging.getLogger("Main")
 
     table_size = 8
     buy_in = 8000
@@ -180,6 +222,8 @@ def main():
 
     # the 0 is the RNG seed
     population = NEAT.Population(genome, neat_parameters, True, 1.0, 0)
+    previous_best_genomes = None
+    current_best_genomes = None
 
     # run for 100 generations
     for generation in range(100):
@@ -193,7 +237,25 @@ def main():
         )
 
         tournament.play()
-        logger.warn(population.GetBestGenome().GetFitness())
+
+        if not current_best_genomes:
+            current_best_genomes = _get_best_n_genomes(population, table_size // 2)
+        else:
+            previous_best_genomes = current_best_genomes
+            current_best_genomes = _get_best_n_genomes(population, table_size // 2)
+
+        if previous_best_genomes:
+            playoff = PlayOff(
+                current_best_genomes,
+                previous_best_genomes,
+                table_size,
+                vector_parameters.money_vector_size,
+                buy_in,
+                min_denomination,
+                tournament_rounds
+            )
+            playoff.play()
+
         population.Epoch()
 
 
