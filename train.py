@@ -10,7 +10,7 @@ _action_vector_size = 3
 _card_vector_size = 13 + 4
 _red = "\x1b[31m"
 _normal = "\x1b[0m"
-_genome_store = "genome-{}-{}"
+_genome_store = "genome-{}/{}"
 
 
 class Training:
@@ -91,7 +91,7 @@ class Training:
             self.in_vector_size,
             0,
             self.action_vector_size,
-            False,
+            True,
             NEAT.ActivationFunction.UNSIGNED_SIGMOID,
             NEAT.ActivationFunction.UNSIGNED_SIGMOID,
             0,
@@ -137,11 +137,10 @@ class Training:
 
             tournament.play()
 
-            if not current_best_genomes:
-                current_best_genomes = self.get_best_n_genomes(population, self.table_size // 2)
-            else:
+            if current_best_genomes:
                 previous_best_genomes = current_best_genomes
-                current_best_genomes = self.get_best_n_genomes(population, self.table_size // 2)
+
+            current_best_genomes = self.get_best_n_genomes(population, self.table_size // 2)
 
             if previous_best_genomes:
                 playoff = PlayOff(

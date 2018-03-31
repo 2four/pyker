@@ -1,18 +1,18 @@
 from collections import deque
 import logging
-from multiprocessing import Process
+from threading import Thread
 
 from seat import Seat
 from poker_round import Round
 from blinds import Blinds
 
 
-class Table(Process):
+class Table(Thread):
 
     LOGGER = logging.getLogger(name="Table")
 
     def __init__(self, players, buy_in, min_denomination):
-        Process.__init__(self)
+        Thread.__init__(self)
 
         self.seats = deque()
         self.min_denomination = min_denomination

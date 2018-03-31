@@ -25,7 +25,7 @@ class NetworkPlayer(Player):
     def __init__(self, genome, money_vector_size, table_size, min_denomination):
         self.genome = genome
         self.network = NEAT.NeuralNetwork()
-        genome.BuildPhenotype(self.network)
+        self.genome.BuildPhenotype(self.network)
 
         self.money_vector_size = money_vector_size
         self.table_size = table_size
