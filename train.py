@@ -10,7 +10,7 @@ _action_vector_size = 3
 _card_vector_size = 13 + 4
 _red = "\x1b[31m"
 _normal = "\x1b[0m"
-_genome_store = "genome-{}/{}"
+_genome_store = "genome/{}-{}"
 
 
 class Training:
@@ -32,7 +32,7 @@ class Training:
         self.neat_parameters.DetectCompetetiveCoevolutionStagnation = True
         self.neat_parameters.MutateAddNeuronProb = 0.1
         self.neat_parameters.MutateAddLinkProb = 0.2
-        self.neat_parameters.CompatTreshold = 0.32
+        self.neat_parameters.CompatTreshold = 0.5
         self.neat_parameters.DynamicCompatibility = True
         self.neat_parameters.CompatTresholdModifier = 0.005
 
@@ -125,7 +125,7 @@ class Training:
         ))
 
         # run for 100 generations
-        for generation in range(100):
+        for generation in range(200):
             tournament = Tournament(
                 population,
                 self.table_size,
@@ -169,6 +169,7 @@ class Training:
 
             population.Epoch()
 
+        self.LOGGER.warn("Training complete")
         return self.get_best_n_genomes(population, self.table_size)
 
 

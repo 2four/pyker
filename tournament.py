@@ -1,8 +1,9 @@
-from network_player import NetworkPlayer
+from multiprocessing import Manager
 import logging
 import random
 
-from poker import Table
+from network_player import NetworkPlayer
+from poker import ParallelTable, Table
 
 
 class Round:
@@ -17,15 +18,22 @@ class Round:
 
     def play(self):
         self.LOGGER.info("NEW ROUND")
-        tables = self.get_tables()
 
-        for table in tables:
-            table.start()
+        with Manager() as manager:
+            fitness_dict = manager.dict()
+            tables = self.get_tables(fitness_dict)
 
-        for table in tables:
-            table.join()
+            for table in tables:
+                table.start()
 
-    def get_tables(self):
+            for table in tables:
+                table.join()
+
+            for player in self.players:
+                fitness = fitness_dict[player.genome_index]
+                player.genome.SetFitness(fitness)
+
+    def get_tables(self, fitness_dict):
         shuffled_players = list(self.players)
         random.shuffle(shuffled_players)
         tables = []
@@ -33,16 +41,16 @@ class Round:
         # split into groups of {self.table_size}
         while len(shuffled_players) > self.table_size * 2:
             player_group = [shuffled_players.pop() for _ in range(self.table_size)]
-            table = Table(player_group, self.buy_in, self.min_denomination)
+            table = ParallelTable(player_group, self.buy_in, self.min_denomination, fitness_dict)
             tables.append(table)
 
         # split the last few into two roughly even groups
         penultimate_group_size = len(shuffled_players) // 2
         penultimate_group = [shuffled_players.pop() for _ in range(penultimate_group_size)]
-        table = Table(penultimate_group, self.buy_in, self.min_denomination)
+        table = ParallelTable(penultimate_group, self.buy_in, self.min_denomination, fitness_dict)
         tables.append(table)
 
-        table = Table(shuffled_players, self.buy_in, self.min_denomination)
+        table = ParallelTable(shuffled_players, self.buy_in, self.min_denomination, fitness_dict)
         tables.append(table)
 
         return tables
@@ -66,7 +74,7 @@ class Tournament:
         num_genomes = self.population.NumGenomes()
         for genome_index in range(num_genomes):
             genome = self.population.AccessGenomeByIndex(genome_index)
-            player = NetworkPlayer(genome, self.table_size, self.money_vector_size, self.min_denomination)
+            player = NetworkPlayer(genome, self.table_size, self.money_vector_size, self.min_denomination, genome_index=genome_index)
             self.players.append(player)
 
     def play(self):

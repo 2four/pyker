@@ -22,7 +22,7 @@ class NetworkPlayer(Player):
 
     LOGGER = logging.getLogger(name="NetworkPlayer")
 
-    def __init__(self, genome, money_vector_size, table_size, min_denomination):
+    def __init__(self, genome, money_vector_size, table_size, min_denomination, genome_index=None):
         self.genome = genome
         self.network = NEAT.NeuralNetwork()
         self.genome.BuildPhenotype(self.network)
@@ -31,6 +31,7 @@ class NetworkPlayer(Player):
         self.table_size = table_size
         self.min_denomination = min_denomination
         self.disqualified = False
+        self.genome_index = genome_index
 
     def supply_state(self, card_1, card_2, bet, game_state):
         self.current_bet = game_state.current_bet
